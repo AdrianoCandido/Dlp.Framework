@@ -63,7 +63,7 @@ The following funcionality are available in this release:
     - XmlDeserialize(): Deserializes a XML string to a new instance of the specified type.
     - XmlSerialize(): Serializes an object to a XML string.
 
-## Extended funcionality:
+## Extended functionality:
 
   - IocFactory
     The IocFactory is a simplified Dependency Injection Container. The most common features that are present on most well know containers are present in this version of the framework, without the need to configure or install third party dependencies.
