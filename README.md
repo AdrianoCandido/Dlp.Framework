@@ -1,3 +1,5 @@
+Navigate to http://stone-payments.github.io/Dlp.Framework/ to access sample codes.
+
 # Dlp.Framework
 Common framework containing utilities and extension methods for fast development.
 
