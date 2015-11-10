@@ -7,7 +7,7 @@
 		<version>0.8.4</version>
 		<authors>Stone Pagamentos S/A</authors>
 		<owners>Stone Pagamentos S/A</owners>
-		<projectUrl>https://github.com/stone-payments/Dlp.Framework</projectUrl>
+		<projectUrl>http://stone-payments.github.io/Dlp.Framework</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Common framework containing utilities and extension methods for fast development.</description>
 		<releaseNotes>Implemented the Mocker class.</releaseNotes>
