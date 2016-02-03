@@ -37,6 +37,16 @@ namespace Dlp.Framework {
             return source.ToString("s", CultureInfo.InvariantCulture);
         }
 
+		/// <summary>
+		/// Converts a DateTime object to the Unix time format, represented by the number of seconds since 01/01/1970.
+		/// </summary>
+		/// <param name="source">DateTime object to be converted.</param>
+		/// <returns>Return the number of seconds since 01/01/1970.</returns>
+		public static long ToUnixTime(this DateTime source) {
+
+			return Convert.ToInt64(source.Subtract(new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds);
+		}
+
         /// <summary>
         /// Get all the availables TimeZones, with its Id and Display Name. Useful for display in ComboBoxes or ListBoxes.
         /// </summary>
@@ -54,5 +64,7 @@ namespace Dlp.Framework {
 
             return timeZoneDictionary;
         }
+
+
     }
 }

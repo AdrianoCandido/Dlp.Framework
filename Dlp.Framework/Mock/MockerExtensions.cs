@@ -55,7 +55,7 @@ namespace Dlp.Framework.Mock {
 						// Adiciona o resultado no nome completo para identificar o método principal.
 						memberFullName += result.ToString().Trim('"');
 
-						parametersMd5 += Serializer.JsonSerialize(result);
+						parametersMd5 += Serializer.JsonSerialize(result).Trim('"');
 					}
 					else {
 						memberFullName += argumentExpression.ToString().Trim('"');
