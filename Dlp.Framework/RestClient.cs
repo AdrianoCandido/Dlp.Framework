@@ -138,7 +138,7 @@ namespace Dlp.Framework {
                     string serializedData = (httpContentType == HttpContentType.Json) ? Serializer.JsonSerialize(dataToSend) : Serializer.XmlSerialize(dataToSend);
 
                     // Prepara os dados a serem enviados.
-                    content = new StringContent(serializedData, System.Text.Encoding.Default, contentType);
+                    content = new StringContent(serializedData, System.Text.Encoding.UTF8, contentType);
                 }
 
                 HttpResponseMessage httpResponseMessage = null;
