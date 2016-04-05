@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -19,6 +20,18 @@ namespace Dlp.Sdk.Tests {
         public int ObjectValue { get; set; }
 
         public string ObjectCreationDate { get; set; }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public sealed class CamelCaseSerializableObject {
+
+        public CamelCaseSerializableObject() { }
+
+        public string objectName { get; set; }
+
+        public int objectValue { get; set; }
+
+        public string objectCreationDate { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -95,6 +108,55 @@ namespace Dlp.Sdk.Tests {
             short result = Serializer.BinaryDeserialize<short>(actual);
 
             Assert.AreEqual(source, result);
+        }
+
+        [TestMethod]
+        public void JsonSerializeObject() {
+
+            DateTime creationDate = DateTime.Now;
+
+            SerializableObject serializableObject = new SerializableObject();
+
+            serializableObject.ObjectName = "Objeto para serialização";
+            serializableObject.ObjectValue = 1;
+            serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
+
+            // Desserializa o objeto.
+            string serializedString = Serializer.JsonSerialize(serializableObject);
+        }
+
+        [TestMethod]
+        public void JsonDeserialize() {
+
+            DateTime creationDate = DateTime.Now;
+
+            SerializableObject serializableObject = new SerializableObject();
+
+            serializableObject.ObjectName = "Objeto para serialização";
+            serializableObject.ObjectValue = 1;
+            serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
+
+            // Desserializa o objeto.
+            string serializedString = Serializer.JsonSerialize(serializableObject);
+
+            CamelCaseSerializableObject newObject = Serializer.JsonDeserialize<CamelCaseSerializableObject>(serializedString);
+
+            Assert.IsNotNull(newObject);
+            Assert.AreEqual(serializableObject.ObjectName, newObject.objectName);
+            Assert.AreEqual(serializableObject.ObjectValue, newObject.objectValue);
+            Assert.AreEqual(serializableObject.ObjectCreationDate, newObject.objectCreationDate);
+        }
+
+        [TestMethod]
+        public void DictionarySerialization() {
+
+            Dictionary<string, string> userDictionary = new Dictionary<string, string>();
+
+            userDictionary.Add("Nome", "Jonssen");
+            userDictionary.Add("Sexo", "Masculino");
+            userDictionary.Add("Idade", "33");
+
+            string serializedUserData = Serializer.JsonSerialize(userDictionary);
         }
 
         [TestMethod]

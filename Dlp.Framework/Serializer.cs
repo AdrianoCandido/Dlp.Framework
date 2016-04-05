@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Web.Script.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -165,18 +166,22 @@ namespace Dlp.Framework {
             // Verifica se foi especificado algum encoding.
             if (encoding == null) { encoding = Encoding.UTF8; }
 
-            // Instancia o objeto responsável pela serialização.
-            DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(source.GetType());
+            JavaScriptSerializer jSerializer = new JavaScriptSerializer();
 
-            // Instancia o memoryStream que conterá o objeto serializado.
-            using (MemoryStream memoryStream = new MemoryStream()) {
+            return jSerializer.Serialize(source);
 
-                // Serializa o objeto para a memória.
-                jsonSerializer.WriteObject(memoryStream, source);
+            //// Instancia o objeto responsável pela serialização.
+            //DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(source.GetType());
 
-                // Converte o array de bytes serializado para a string a ser retornada.
-                return encoding.GetString(memoryStream.ToArray());
-            }
+            //// Instancia o memoryStream que conterá o objeto serializado.
+            //using (MemoryStream memoryStream = new MemoryStream()) {
+
+            //    // Serializa o objeto para a memória.
+            //    jsonSerializer.WriteObject(memoryStream, source);
+
+            //    // Converte o array de bytes serializado para a string a ser retornada.
+            //    return encoding.GetString(memoryStream.ToArray());
+            //}
         }
 
         /// <summary>
@@ -212,15 +217,19 @@ namespace Dlp.Framework {
             // Verifica se foi especificado algum encoding. Caso negativo, define UTF8.
             if (encoding == null) { encoding = Encoding.UTF8; }
 
-            // Instancia o objeto responsável pela serialização.
-            DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(returnType);
+            JavaScriptSerializer jSerializer = new JavaScriptSerializer();
 
-            // Armazena o array de bytes do objeto na memória.
-            using (MemoryStream memoryStream = new MemoryStream(encoding.GetBytes(source))) {
+            return jSerializer.Deserialize(source, returnType);
 
-                // Realiza a deserialização da string para o objeto a ser retornado.
-                return jsonSerializer.ReadObject(memoryStream);
-            }
+            //// Instancia o objeto responsável pela serialização.
+            //DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(returnType);
+
+            //// Armazena o array de bytes do objeto na memória.
+            //using (MemoryStream memoryStream = new MemoryStream(encoding.GetBytes(source))) {
+
+            //    // Realiza a deserialização da string para o objeto a ser retornado.
+            //    return jsonSerializer.ReadObject(memoryStream);
+            //}
         }
     }
 }

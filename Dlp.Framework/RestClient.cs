@@ -76,6 +76,11 @@ namespace Dlp.Framework {
         /// Gets the returned data.
         /// </summary>
         public T ResponseData { get; internal set; }
+
+        /// <summary>
+        /// Gets the raw string returned by the service.
+        /// </summary>
+        public string RawData { get; set; }
     }
 
     /// <summary>
@@ -162,7 +167,7 @@ namespace Dlp.Framework {
             }
 
             // Cria o objeto contendo o resultado da requisição.
-            return new WebResponse<T>() { StatusCode = responseStatusCode, ResponseData = returnValue };
+            return new WebResponse<T>() { StatusCode = responseStatusCode, ResponseData = returnValue, RawData = returnString };
         }
 
         /// <summary>
