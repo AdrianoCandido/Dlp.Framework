@@ -140,7 +140,7 @@ namespace Dlp.Framework {
                 if (dataToSend != null) {
 
                     // Serializa o objeto para o formato especificado.
-                    string serializedData = (httpContentType == HttpContentType.Json) ? Serializer.JsonSerialize(dataToSend) : Serializer.XmlSerialize(dataToSend);
+                    string serializedData = (httpContentType == HttpContentType.Json) ? Serializer.JavasScriptSerialize(dataToSend) : Serializer.XmlSerialize(dataToSend);
 
                     // Prepara os dados a serem enviados.
                     content = new StringContent(serializedData, System.Text.Encoding.UTF8, contentType);
@@ -163,7 +163,7 @@ namespace Dlp.Framework {
             if (typeof(T) == typeof(string)) { returnValue = returnString as T; }
             else {
                 // Executa a deserialização adequada.
-                returnValue = (httpContentType == HttpContentType.Json) ? Serializer.JsonDeserialize<T>(returnString) : Serializer.XmlDeserialize<T>(returnString);
+                returnValue = (httpContentType == HttpContentType.Json) ? Serializer.JavaScriptDeserialize<T>(returnString) : Serializer.XmlDeserialize<T>(returnString);
             }
 
             // Cria o objeto contendo o resultado da requisição.

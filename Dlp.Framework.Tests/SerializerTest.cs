@@ -123,6 +123,8 @@ namespace Dlp.Sdk.Tests {
 
             // Desserializa o objeto.
             string serializedString = Serializer.JsonSerialize(serializableObject);
+
+            Assert.IsNotNull(serializedString);
         }
 
         [TestMethod]
@@ -139,7 +141,83 @@ namespace Dlp.Sdk.Tests {
             // Desserializa o objeto.
             string serializedString = Serializer.JsonSerialize(serializableObject);
 
-            CamelCaseSerializableObject newObject = Serializer.JsonDeserialize<CamelCaseSerializableObject>(serializedString);
+            SerializableObject newObject = Serializer.JsonDeserialize<SerializableObject>(serializedString);
+
+            Assert.IsNotNull(newObject);
+            Assert.AreEqual(serializableObject.ObjectName, newObject.ObjectName);
+            Assert.AreEqual(serializableObject.ObjectValue, newObject.ObjectValue);
+            Assert.AreEqual(serializableObject.ObjectCreationDate, newObject.ObjectCreationDate);
+        }
+
+        [TestMethod]
+        public void JavaScriptSerialize() {
+
+            DateTime creationDate = DateTime.Now;
+
+            SerializableObject serializableObject = new SerializableObject();
+
+            serializableObject.ObjectName = "Objeto para serialização";
+            serializableObject.ObjectValue = 1;
+            serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
+
+            // Desserializa o objeto.
+            string serializedString = Serializer.JavasScriptSerialize(serializableObject);
+
+            Assert.IsNotNull(serializedString);
+            Assert.AreEqual("{\"ObjectName\":\"Objeto para serialização\",\"ObjectValue\":1,\"ObjectCreationDate\":\"" + creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz") + "\"}", serializedString);
+        }
+
+        [TestMethod]
+        public void JavaScriptSerializeIgnoreNull() {
+
+            DateTime creationDate = DateTime.Now;
+
+            SerializableObject serializableObject = new SerializableObject();
+
+            serializableObject.ObjectName = null;
+            serializableObject.ObjectValue = 1;
+            serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
+
+            // Desserializa o objeto.
+            string serializedString = Serializer.JavasScriptSerialize(serializableObject);
+
+            Assert.IsNotNull(serializedString);
+            Assert.AreEqual("{\"ObjectValue\":1,\"ObjectCreationDate\":\"" + creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz") + "\"}", serializedString);
+        }
+
+        [TestMethod]
+        public void JavaScriptSerializeIncludeNull() {
+
+            DateTime creationDate = DateTime.Now;
+
+            SerializableObject serializableObject = new SerializableObject();
+
+            serializableObject.ObjectName = null;
+            serializableObject.ObjectValue = 1;
+            serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
+
+            // Desserializa o objeto.
+            string serializedString = Serializer.JavasScriptSerialize(serializableObject, false);
+
+            Assert.IsNotNull(serializedString);
+            Assert.AreEqual("{\"ObjectName\":null,\"ObjectValue\":1,\"ObjectCreationDate\":\"" + creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz") + "\"}", serializedString);
+        }
+
+        [TestMethod]
+        public void JavaScriptDeserialize() {
+
+            DateTime creationDate = DateTime.Now;
+
+            SerializableObject serializableObject = new SerializableObject();
+
+            serializableObject.ObjectName = "Objeto para serialização";
+            serializableObject.ObjectValue = 1;
+            serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
+
+            // Desserializa o objeto.
+            string serializedString = Serializer.JavasScriptSerialize(serializableObject);
+
+            CamelCaseSerializableObject newObject = Serializer.JavaScriptDeserialize<CamelCaseSerializableObject>(serializedString);
 
             Assert.IsNotNull(newObject);
             Assert.AreEqual(serializableObject.ObjectName, newObject.objectName);

@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization.Json;
 using System.Text;
@@ -153,7 +156,7 @@ namespace Dlp.Framework {
         }
 
         /// <summary>
-        /// Serializes an object to a JSON string format.
+        /// Serializes an object to a JSON string format using the DataContractJsonSerializer class. This serializer is case sensitive and does not serialize null objects by default.
         /// </summary>
         /// <param name="source">Object to be serialized.</param>
         /// <param name="encoding">Encoding to be used for serialization. Default value: Encoding.UTF8.</param>
@@ -166,26 +169,43 @@ namespace Dlp.Framework {
             // Verifica se foi especificado algum encoding.
             if (encoding == null) { encoding = Encoding.UTF8; }
 
-            JavaScriptSerializer jSerializer = new JavaScriptSerializer();
+            // Instancia o objeto responsável pela serialização.
+            DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(source.GetType());
 
-            return jSerializer.Serialize(source);
+            // Instancia o memoryStream que conterá o objeto serializado.
+            using (MemoryStream memoryStream = new MemoryStream()) {
 
-            //// Instancia o objeto responsável pela serialização.
-            //DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(source.GetType());
+                // Serializa o objeto para a memória.
+                jsonSerializer.WriteObject(memoryStream, source);
 
-            //// Instancia o memoryStream que conterá o objeto serializado.
-            //using (MemoryStream memoryStream = new MemoryStream()) {
-
-            //    // Serializa o objeto para a memória.
-            //    jsonSerializer.WriteObject(memoryStream, source);
-
-            //    // Converte o array de bytes serializado para a string a ser retornada.
-            //    return encoding.GetString(memoryStream.ToArray());
-            //}
+                // Converte o array de bytes serializado para a string a ser retornada.
+                return encoding.GetString(memoryStream.ToArray());
+            }
         }
 
         /// <summary>
-        /// Deserializes a JSON string to an instance of type T.
+        /// Serializes an object to a JSON string format using the JavaScriptSerializer class. This serializer is case insensitive and allows you to choose whether or not to serialize null objects.
+        /// </summary>
+        /// <param name="source">Object to be serialized.</param>
+        /// <param name="ignoreNullObjects">When set to false, null objects are going to be serialized. Default value: true.</param>
+        /// <returns>Returns the serialized string, or null, if the source object was not suplied.</returns>
+        public static string JavasScriptSerialize(object source, bool ignoreNullObjects = true) {
+
+            // Sai do método caso não exista informação a ser serializada.
+            if (source == null) { return null; }
+
+            JavaScriptSerializer serializer = new JavaScriptSerializer();
+
+            // Verifica se os objetos nulos devem ser ignorados.
+            if (ignoreNullObjects == true) {
+                serializer.RegisterConverters(new JavaScriptConverter[] { new NullPropertiesConverter(Assembly.GetCallingAssembly()) });
+            }            
+
+            return serializer.Serialize(source);
+        }
+
+        /// <summary>
+        /// Deserializes a JSON string to an instance of type T. This serializer is case sensitive.
         /// </summary>
         /// <typeparam name="T">Type of the instance to be returned.</typeparam>
         /// <param name="source">JSON string to be deserialized.</param>
@@ -203,7 +223,7 @@ namespace Dlp.Framework {
         }
 
         /// <summary>
-        /// Deserializes a JSON string to an object instance.
+        /// Deserializes a JSON string to an object instance using the DataContractJsonSerializer. This serializer is case sensitive.
         /// </summary>
         /// <param name="returnType">Type of the instance to be returned.</param>
         /// <param name="source">JSON string to be deserialized.</param>
@@ -217,19 +237,81 @@ namespace Dlp.Framework {
             // Verifica se foi especificado algum encoding. Caso negativo, define UTF8.
             if (encoding == null) { encoding = Encoding.UTF8; }
 
-            JavaScriptSerializer jSerializer = new JavaScriptSerializer();
+            // Instancia o objeto responsável pela serialização.
+            DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(returnType);
 
-            return jSerializer.Deserialize(source, returnType);
+            // Armazena o array de bytes do objeto na memória.
+            using (MemoryStream memoryStream = new MemoryStream(encoding.GetBytes(source))) {
 
-            //// Instancia o objeto responsável pela serialização.
-            //DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(returnType);
+                // Realiza a deserialização da string para o objeto a ser retornado.
+                return jsonSerializer.ReadObject(memoryStream);
+            }
+        }
 
-            //// Armazena o array de bytes do objeto na memória.
-            //using (MemoryStream memoryStream = new MemoryStream(encoding.GetBytes(source))) {
+        /// <summary>
+        /// Deserializes a JSON string to an instance of type T using the JavaScriptSerializer. This serializer is case insensitive.
+        /// </summary>
+        /// <typeparam name="T">Type of the instance to be returned.</typeparam>
+        /// <param name="source">JSON string to be deserialized.</param>
+        /// <returns>Return a new instance of type T with the deserialized data, or default(T), if the JSON string is null.</returns>
+        public static T JavaScriptDeserialize<T>(string source) where T : class {
 
-            //    // Realiza a deserialização da string para o objeto a ser retornado.
-            //    return jsonSerializer.ReadObject(memoryStream);
-            //}
+            // Desserializa o objeto.
+            object result = JavaScriptDeserialize(typeof(T), source);
+
+            // Caso o objeto não exista, returna default(T).
+            if (result == null) { return default(T); }
+
+            return (T)result;
+        }
+
+        /// <summary>
+        /// Deserializes a JSON string to an object instance using the JavaScriptSerializer. This serializer is case insensitive.
+        /// </summary>
+        /// <param name="returnType">Type of the instance to be returned.</param>
+        /// <param name="source">JSON string to be deserialized.</param>
+        /// <returns>Return a new instance of type T with the deserialized data, or default(T), if the JSON string is null.</returns>
+        public static object JavaScriptDeserialize(Type returnType, string source) {
+
+            // Verifica se o objeto foi especificado.
+            if (source == null) { return null; }
+
+            JavaScriptSerializer serializer = new JavaScriptSerializer();
+
+            return serializer.Deserialize(source, returnType);
+        }
+    }
+
+    internal class NullPropertiesConverter : JavaScriptConverter {
+
+        public NullPropertiesConverter(Assembly callingAssembly) {
+            this.CallingAssembly = callingAssembly;
+        }
+
+        private Assembly CallingAssembly { get; set; }
+
+        public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer) {
+            throw new NotImplementedException();
+        }
+
+        public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer) {
+            var jsonExample = new Dictionary<string, object>();
+            foreach (var prop in obj.GetType().GetProperties()) {
+                //check if decorated with ScriptIgnore attribute
+                bool ignoreProp = prop.IsDefined(typeof(ScriptIgnoreAttribute), true);
+
+                var value = prop.GetValue(obj, BindingFlags.Public, null, null, null);
+                if (value != null && !ignoreProp)
+                    jsonExample.Add(prop.Name, value);
+            }
+
+            return jsonExample;
+        }
+
+        public override IEnumerable<Type> SupportedTypes {
+            get {
+                return this.CallingAssembly.GetTypes().OrderBy(p => p.Name).ToArray();
+            }
         }
     }
 }
