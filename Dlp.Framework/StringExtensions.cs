@@ -198,7 +198,7 @@ namespace Dlp.Framework {
             string cnpj = source.GetDigits();
 
             // Retorna false, caso o cnpj não possua 11 dígitos.
-			if (cnpj.Length != 14 || cnpj.Distinct().Count() == 1) { return false; }
+            if (cnpj.Length != 14 || cnpj.Distinct().Count() == 1) { return false; }
 
             // Armazena os números do CNPJ sem, os dígitos verificadores.
             string tempCnpj = cnpj.Substring(0, 12);
@@ -348,27 +348,27 @@ namespace Dlp.Framework {
             return UTF8Encoding.UTF8.GetString(resultArray);
         }
 
-		/// <summary>
-		/// Calculates the MD5 for a string.
-		/// </summary>
-		/// <param name="source">Source string to generate the MD5 from.</param>
-		/// <returns>Returns the hexadecimal MD5 hash of the string.</returns>
-		public static string CalculateMd5(this string source) {
+        /// <summary>
+        /// Calculates the MD5 for a string.
+        /// </summary>
+        /// <param name="source">Source string to generate the MD5 from.</param>
+        /// <returns>Returns the hexadecimal MD5 hash of the string.</returns>
+        public static string CalculateMd5(this string source) {
 
-			// Verifica se a string foi especificada.
-			if (string.IsNullOrWhiteSpace(source) == true) { return source; }
+            // Verifica se a string foi especificada.
+            if (string.IsNullOrWhiteSpace(source) == true) { return source; }
 
-			// Converte a mensagem para uma array de bytes.
-			byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(source);
+            // Converte a mensagem para uma array de bytes.
+            byte[] messageBytes = System.Text.Encoding.UTF8.GetBytes(source);
 
-			MD5 md5 = MD5.Create();			
+            MD5 md5 = MD5.Create();
 
-			// Calcula o hash da mensagem recebida.
-			byte[] hashedMessageBytes = md5.ComputeHash(messageBytes);
+            // Calcula o hash da mensagem recebida.
+            byte[] hashedMessageBytes = md5.ComputeHash(messageBytes);
 
-			//Convertendo para Base64String
-			return ByteArrayToHexString(hashedMessageBytes);
-		}
+            //Convertendo para Base64String
+            return ByteArrayToHexString(hashedMessageBytes);
+        }
 
         /// <summary>
         /// Calculates the MD5 for a string.
@@ -527,11 +527,11 @@ namespace Dlp.Framework {
 
             // Cria uma lista de inteiros, para conter cada caractere da string recebida.
             return Enumerable.Range(0, source.Length)
-                // Pega cada caracter par, pois em strings hexadecimais, cada byte possui 2 caracteres: o par e o ímpar subsequente.
+                             // Pega cada caracter par, pois em strings hexadecimais, cada byte possui 2 caracteres: o par e o ímpar subsequente.
                              .Where(p => p % 2 == 0)
-                // Converte os dois caracteres que estão em haxadecimal, para um byte.
+                             // Converte os dois caracteres que estão em haxadecimal, para um byte.
                              .Select(p => Convert.ToByte(source.Substring(p, 2), 16))
-                // Converte o resultado para um array de bytes a ser retornado.
+                             // Converte o resultado para um array de bytes a ser retornado.
                              .ToArray();
         }
 
@@ -669,6 +669,35 @@ namespace Dlp.Framework {
             rawData.Insert(5, '-');
 
             return new string(rawData.ToArray());
+        }
+
+        /// <summary>
+        /// Converts a string to an IEnumerable collection.
+        /// </summary>
+        /// <typeparam name="T">Type of the elements of the IEnumerable.</typeparam>
+        /// <param name="value">String containing the elements to be converted.</param>
+        /// <param name="separators">An array of chars representing the separators that should be used to split the elements.</param>
+        /// <returns></returns>
+        public static IEnumerable<T> AsIEnumerable<T>(this string value, params char[] separators) {
+
+            // Caso a string não tenha sido especificada, retorna uma nova lista vazia.
+            if (string.IsNullOrWhiteSpace(value) == true) { return new List<T>(); }
+
+            List<T> result = new List<T>();
+
+            // Separa cada item utilizando os separadores especificados.
+            string[] elements = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+            // Adiciona cada elemento da string na lista a ser retornada.
+            foreach (string element in elements) {
+
+                // Converte o elemento para o tipo a ser retornado.
+                T item = (T)Convert.ChangeType(element.Trim(), typeof(T));
+
+                result.Add(item);
+            }
+
+            return result;
         }
     }
 

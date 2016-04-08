@@ -73,6 +73,11 @@ namespace Dlp.Framework {
         public HttpStatusCode StatusCode { get; internal set; }
 
         /// <summary>
+        /// Gets the flag that indicates whether the StatusCode represents a successful operation.
+        /// </summary>
+        public bool IsSuccessStatusCode { get; internal set; }
+
+        /// <summary>
         /// Gets the returned data.
         /// </summary>
         public T ResponseData { get; internal set; }
@@ -119,6 +124,7 @@ namespace Dlp.Framework {
 
             // Variável que armazenará o resultado da requisição.
             string returnString = string.Empty;
+            bool isSuccessStatusCode = false;
 
             using (var httpClient = new HttpClient()) {
 
@@ -155,6 +161,7 @@ namespace Dlp.Framework {
 
                 responseStatusCode = httpResponseMessage.StatusCode;
                 returnString = httpResponseMessage.Content.ReadAsStringAsync().Result;
+                isSuccessStatusCode = httpResponseMessage.IsSuccessStatusCode;
             }
 
             T returnValue = null;
@@ -162,12 +169,17 @@ namespace Dlp.Framework {
             // Caso o tipo a ser retornado seja uma string, não executa a deserialização.
             if (typeof(T) == typeof(string)) { returnValue = returnString as T; }
             else {
-                // Executa a deserialização adequada.
-                returnValue = (httpContentType == HttpContentType.Json) ? Serializer.JavaScriptDeserialize<T>(returnString) : Serializer.XmlDeserialize<T>(returnString);
+                try {
+                    // Executa a deserialização adequada.
+                    returnValue = (httpContentType == HttpContentType.Json) ? Serializer.JavaScriptDeserialize<T>(returnString) : Serializer.XmlDeserialize<T>(returnString);
+                }
+                catch (Exception ex) {
+                    returnValue = null;
+                }
             }
 
             // Cria o objeto contendo o resultado da requisição.
-            return new WebResponse<T>() { StatusCode = responseStatusCode, ResponseData = returnValue, RawData = returnString };
+            return new WebResponse<T>() { StatusCode = responseStatusCode, IsSuccessStatusCode = isSuccessStatusCode, ResponseData = returnValue, RawData = returnString };
         }
 
         /// <summary>

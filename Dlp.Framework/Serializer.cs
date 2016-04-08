@@ -199,7 +199,7 @@ namespace Dlp.Framework {
             // Verifica se os objetos nulos devem ser ignorados.
             if (ignoreNullObjects == true) {
                 serializer.RegisterConverters(new JavaScriptConverter[] { new NullPropertiesConverter(Assembly.GetCallingAssembly()) });
-            }            
+            }
 
             return serializer.Serialize(source);
         }

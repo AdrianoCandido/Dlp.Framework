@@ -1,6 +1,8 @@
 ﻿using Dlp.Framework;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
@@ -575,6 +577,26 @@ namespace Dlp.Sdk.Tests {
 
             string source = "banana_1234";
             string actual = source.Decrypt(null);
+        }
+
+        [TestMethod]
+        public void ConvertStringToIEnumerable() {
+
+            string source = "Brunno, Damião, Jonssen";
+            IEnumerable<string> actual = source.AsIEnumerable<string>(',');
+
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(3, actual.Count());
+        }
+
+        [TestMethod]
+        public void ConvertStringToIntIEnumerable() {
+
+            string source = "12, 15, 17";
+            IEnumerable<int> actual = source.AsIEnumerable<int>(',');
+
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(3, actual.Count());
         }
     }
 }
