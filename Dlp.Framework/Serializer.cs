@@ -9,6 +9,7 @@ using System.Text;
 using System.Web.Script.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace Dlp.Framework {
 
@@ -138,7 +139,7 @@ namespace Dlp.Framework {
                 if (indent == true) {
 
                     // Define o formato de identação do xml gerado.
-                    xmlTextWriter.Formatting = Formatting.Indented;
+                    xmlTextWriter.Formatting = System.Xml.Formatting.Indented;
 
                     // 1 caractere de indentação por nível.
                     xmlTextWriter.Indentation = 1;
@@ -153,6 +154,11 @@ namespace Dlp.Framework {
                 // Retorna a string serializada da memória.
                 return encoding.GetString(memoryStream.ToArray());
             }
+        }
+
+        public static string NewtonsoftSerialize(object source) {
+
+            return JsonConvert.SerializeObject(source);
         }
 
         /// <summary>
@@ -189,23 +195,51 @@ namespace Dlp.Framework {
         /// <param name="source">Object to be serialized.</param>
         /// <param name="ignoreNullObjects">When set to false, null objects are going to be serialized. Default value: true.</param>
         /// <returns>Returns the serialized string, or null, if the source object was not suplied.</returns>
-        public static string JavasScriptSerialize(object source, bool ignoreNullObjects = true) {
+        public static string JavaScriptSerialize(object source, bool ignoreNullObjects = true) {
 
             // Sai do método caso não exista informação a ser serializada.
             if (source == null) { return null; }
 
             JavaScriptSerializer serializer = new JavaScriptSerializer();
 
-            // Verifica se os objetos nulos devem ser ignorados.
-            if (ignoreNullObjects == true) {
-                serializer.RegisterConverters(new JavaScriptConverter[] { new NullPropertiesConverter(Assembly.GetCallingAssembly()) });
-            }
+            serializer.RegisterConverters(new JavaScriptConverter[] { new NullPropertiesConverter(Assembly.GetCallingAssembly(), ignoreNullObjects) });
 
             return serializer.Serialize(source);
         }
 
         /// <summary>
-        /// Deserializes a JSON string to an instance of type T. This serializer is case sensitive.
+        /// Deserializes a JSON string to an instance of type T using the Newtonsoft Serializer.
+        /// </summary>
+        /// <typeparam name="T">Type of the instance to be returned.</typeparam>
+        /// <param name="source">JSON string to be deserialized.</param>
+        /// <returns>Return a new instance of type T with the deserialized data, or default(T), if the JSON string is null.</returns>
+        public static T NewtonsoftDeserialize<T>(string source) {
+
+            object result = NewtonsoftDeserialize(typeof(T), source);
+
+            // Caso o objeto não exista, retorna default(T).
+            if (result == null) { return default(T); }
+
+            return (T)result;
+        }
+
+        /// <summary>
+        /// Deserializes a JSON string to an object instance using the Newtonsoft Serializer.
+        /// </summary>
+        /// <param name="returnType">Type of the instance to be returned.</param>
+        /// <param name="source">JSON string to be deserialized.</param>
+        /// <returns>Return a new instance of type T with the deserialized data, or default(T), if the JSON string is null.</returns>
+        public static object NewtonsoftDeserialize(Type returnType, string source) {
+
+            // Verifica se o objeto foi especificado.
+            if (source == null) { return null; }
+
+            // Executa a deserialização.
+            return JsonConvert.DeserializeObject(source, returnType);
+        }
+
+        /// <summary>
+        /// Deserializes a JSON string to an instance of type T using the DataContractJsonSerializer. This serializer is case sensitive.
         /// </summary>
         /// <typeparam name="T">Type of the instance to be returned.</typeparam>
         /// <param name="source">JSON string to be deserialized.</param>
@@ -278,34 +312,49 @@ namespace Dlp.Framework {
 
             JavaScriptSerializer serializer = new JavaScriptSerializer();
 
+            serializer.RegisterConverters(new NullPropertiesConverter[] { new NullPropertiesConverter(Assembly.GetCallingAssembly(), false) });
+
             return serializer.Deserialize(source, returnType);
         }
     }
 
     internal class NullPropertiesConverter : JavaScriptConverter {
 
-        public NullPropertiesConverter(Assembly callingAssembly) {
+        public NullPropertiesConverter(Assembly callingAssembly, bool ignoreNullObjects) {
             this.CallingAssembly = callingAssembly;
+            this.IgnoreNullObjects = ignoreNullObjects;
         }
 
         private Assembly CallingAssembly { get; set; }
+        private bool IgnoreNullObjects { get; set; }
 
         public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer) {
+
             throw new NotImplementedException();
         }
 
         public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer) {
-            var jsonExample = new Dictionary<string, object>();
-            foreach (var prop in obj.GetType().GetProperties()) {
-                //check if decorated with ScriptIgnore attribute
-                bool ignoreProp = prop.IsDefined(typeof(ScriptIgnoreAttribute), true);
 
-                var value = prop.GetValue(obj, BindingFlags.Public, null, null, null);
-                if (value != null && !ignoreProp)
-                    jsonExample.Add(prop.Name, value);
+            IDictionary<string, object> propertyDictionary = new Dictionary<string, object>();
+
+            foreach (PropertyInfo propertyInfo in obj.GetType().GetProperties()) {
+
+                bool ignoreProperty = propertyInfo.IsDefined(typeof(JavaScriptIgnoreAttribute), true);
+
+                object value = propertyInfo.GetValue(obj, BindingFlags.Public, null, null, null);
+
+                string propertyName = propertyInfo.Name;
+
+                // Verifica se deve ser utilzado algum nome personalizado para a propriedade.
+                JavaScriptPropertyAttribute javaScriptPropertyAttribute = propertyInfo.GetCustomAttribute(typeof(JavaScriptPropertyAttribute), true) as JavaScriptPropertyAttribute;
+
+                // Verifica se o usuário especificou um nome de propriedade personalizado.
+                if (javaScriptPropertyAttribute != null && string.IsNullOrWhiteSpace(javaScriptPropertyAttribute.Name) == false) { propertyName = javaScriptPropertyAttribute.Name; }
+
+                if (ignoreProperty == false && (value != null || this.IgnoreNullObjects == false)) { propertyDictionary.Add(propertyName, value); }
             }
 
-            return jsonExample;
+            return propertyDictionary;
         }
 
         public override IEnumerable<Type> SupportedTypes {
@@ -313,5 +362,27 @@ namespace Dlp.Framework {
                 return this.CallingAssembly.GetTypes().OrderBy(p => p.Name).ToArray();
             }
         }
+    }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Field)]
+    public sealed class JavaScriptPropertyAttribute : Attribute {
+
+        public JavaScriptPropertyAttribute(string name) : base() {
+            this.Name = name;
+        }
+
+        /// <summary>
+        /// Gets or sets the property name when serializing.
+        /// </summary>
+        public string Name { get; set; }
+    }
+
+    /// <summary>
+    /// Set this attribute to avoid the member to be serialized.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    public sealed class JavaScriptIgnoreAttribute : Attribute {
+
+        public JavaScriptIgnoreAttribute() : base() { }
     }
 }

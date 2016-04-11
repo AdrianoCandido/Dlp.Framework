@@ -146,7 +146,7 @@ namespace Dlp.Framework {
                 if (dataToSend != null) {
 
                     // Serializa o objeto para o formato especificado.
-                    string serializedData = (httpContentType == HttpContentType.Json) ? Serializer.JavasScriptSerialize(dataToSend) : Serializer.XmlSerialize(dataToSend);
+                    string serializedData = (httpContentType == HttpContentType.Json) ? Serializer.NewtonsoftSerialize(dataToSend) : Serializer.XmlSerialize(dataToSend);
 
                     // Prepara os dados a serem enviados.
                     content = new StringContent(serializedData, System.Text.Encoding.UTF8, contentType);
@@ -171,7 +171,7 @@ namespace Dlp.Framework {
             else {
                 try {
                     // Executa a deserialização adequada.
-                    returnValue = (httpContentType == HttpContentType.Json) ? Serializer.JavaScriptDeserialize<T>(returnString) : Serializer.XmlDeserialize<T>(returnString);
+                    returnValue = (httpContentType == HttpContentType.Json) ? Serializer.NewtonsoftDeserialize<T>(returnString) : Serializer.XmlDeserialize<T>(returnString);
                 }
                 catch (Exception ex) {
                     returnValue = null;

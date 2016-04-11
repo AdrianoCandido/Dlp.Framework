@@ -1,5 +1,6 @@
 ﻿using Dlp.Framework;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace Dlp.Sdk.Tests {
 
         public SerializableObject() { }
 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string ObjectName { get; set; }
 
         public int ObjectValue { get; set; }
@@ -150,6 +152,64 @@ namespace Dlp.Sdk.Tests {
         }
 
         [TestMethod]
+        public void NewtonsoftSerialize() {
+
+            DateTime creationDate = DateTime.Now;
+
+            SerializableObject serializableObject = new SerializableObject();
+
+            serializableObject.ObjectName = "Objeto para serialização";
+            serializableObject.ObjectValue = 1;
+            serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
+
+            // Desserializa o objeto.
+            string serializedString = Serializer.NewtonsoftSerialize(serializableObject);
+
+            Assert.IsNotNull(serializedString);
+            Assert.AreEqual("{\"ObjectName\":\"Objeto para serialização\",\"ObjectValue\":1,\"ObjectCreationDate\":\"" + creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz") + "\"}", serializedString);
+        }
+
+        [TestMethod]
+        public void NewtonsoftSerializeIgnoreNull() {
+
+            DateTime creationDate = DateTime.Now;
+
+            SerializableObject serializableObject = new SerializableObject();
+
+            serializableObject.ObjectName = null;
+            serializableObject.ObjectValue = 1;
+            serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
+
+            // Desserializa o objeto.
+            string serializedString = Serializer.NewtonsoftSerialize(serializableObject);
+
+            Assert.IsNotNull(serializedString);
+            Assert.AreEqual("{\"ObjectValue\":1,\"ObjectCreationDate\":\"" + creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz") + "\"}", serializedString);
+        }
+
+        [TestMethod]
+        public void JavaScriptDeserialize() {
+
+            DateTime creationDate = DateTime.Now;
+
+            SerializableObject serializableObject = new SerializableObject();
+
+            serializableObject.ObjectName = "Objeto para serialização";
+            serializableObject.ObjectValue = 1;
+            serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
+
+            // Desserializa o objeto.
+            string serializedString = Serializer.NewtonsoftSerialize(serializableObject);
+
+            CamelCaseSerializableObject newObject = Serializer.NewtonsoftDeserialize<CamelCaseSerializableObject>(serializedString);
+
+            Assert.IsNotNull(newObject);
+            Assert.AreEqual(serializableObject.ObjectName, newObject.objectName);
+            Assert.AreEqual(serializableObject.ObjectValue, newObject.objectValue);
+            Assert.AreEqual(serializableObject.ObjectCreationDate, newObject.objectCreationDate);
+        }
+
+        [TestMethod]
         public void JavaScriptSerialize() {
 
             DateTime creationDate = DateTime.Now;
@@ -161,7 +221,7 @@ namespace Dlp.Sdk.Tests {
             serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
 
             // Desserializa o objeto.
-            string serializedString = Serializer.JavasScriptSerialize(serializableObject);
+            string serializedString = Serializer.JavaScriptSerialize(serializableObject);
 
             Assert.IsNotNull(serializedString);
             Assert.AreEqual("{\"ObjectName\":\"Objeto para serialização\",\"ObjectValue\":1,\"ObjectCreationDate\":\"" + creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz") + "\"}", serializedString);
@@ -179,7 +239,7 @@ namespace Dlp.Sdk.Tests {
             serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
 
             // Desserializa o objeto.
-            string serializedString = Serializer.JavasScriptSerialize(serializableObject);
+            string serializedString = Serializer.JavaScriptSerialize(serializableObject);
 
             Assert.IsNotNull(serializedString);
             Assert.AreEqual("{\"ObjectValue\":1,\"ObjectCreationDate\":\"" + creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz") + "\"}", serializedString);
@@ -197,14 +257,14 @@ namespace Dlp.Sdk.Tests {
             serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
 
             // Desserializa o objeto.
-            string serializedString = Serializer.JavasScriptSerialize(serializableObject, false);
+            string serializedString = Serializer.JavaScriptSerialize(serializableObject, false);
 
             Assert.IsNotNull(serializedString);
             Assert.AreEqual("{\"ObjectName\":null,\"ObjectValue\":1,\"ObjectCreationDate\":\"" + creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz") + "\"}", serializedString);
         }
 
         [TestMethod]
-        public void JavaScriptDeserialize() {
+        public void NewtonsoftDeserialize() {
 
             DateTime creationDate = DateTime.Now;
 
@@ -215,7 +275,7 @@ namespace Dlp.Sdk.Tests {
             serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
 
             // Desserializa o objeto.
-            string serializedString = Serializer.JavasScriptSerialize(serializableObject);
+            string serializedString = Serializer.JavaScriptSerialize(serializableObject);
 
             CamelCaseSerializableObject newObject = Serializer.JavaScriptDeserialize<CamelCaseSerializableObject>(serializedString);
 
@@ -226,7 +286,7 @@ namespace Dlp.Sdk.Tests {
         }
 
         [TestMethod]
-        public void DictionarySerialization() {
+        public void JavascriptDictionarySerialization() {
 
             Dictionary<string, string> userDictionary = new Dictionary<string, string>();
 
@@ -235,6 +295,22 @@ namespace Dlp.Sdk.Tests {
             userDictionary.Add("Idade", "33");
 
             string serializedUserData = Serializer.JsonSerialize(userDictionary);
+
+            Assert.IsNotNull(serializedUserData);
+        }
+
+        [TestMethod]
+        public void NewtonsoftDictionarySerialization() {
+
+            Dictionary<string, string> userDictionary = new Dictionary<string, string>();
+
+            userDictionary.Add("Nome", "Jonssen");
+            userDictionary.Add("Sexo", "Masculino");
+            userDictionary.Add("Idade", "33");
+
+            string serializedUserData = Serializer.NewtonsoftSerialize(userDictionary);
+
+            Assert.IsNotNull(serializedUserData);
         }
 
         [TestMethod]
