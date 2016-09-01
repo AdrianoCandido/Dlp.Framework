@@ -210,6 +210,32 @@ namespace Dlp.Sdk.Tests {
         }
 
         [TestMethod]
+        public void JavaScriptDynamicDeserialize() {
+
+            #region Serialização
+            DateTime creationDate = DateTime.Now;
+
+            SerializableObject serializableObject = new SerializableObject();
+
+            serializableObject.ObjectName = "Objeto para serialização";
+            serializableObject.ObjectValue = 1;
+            serializableObject.ObjectCreationDate = creationDate.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
+
+            // Desserializa o objeto.
+            string serializedString = Serializer.NewtonsoftSerialize(serializableObject);
+            #endregion
+
+            dynamic newObject = Serializer.DynamicDeserialize(serializedString);
+
+            string name = newObject.ObjectName;
+
+            Assert.IsNotNull(newObject);
+            Assert.AreEqual(serializableObject.ObjectName, newObject.ObjectName);
+            Assert.AreEqual(serializableObject.ObjectValue, newObject.ObjectValue);
+            Assert.AreEqual(serializableObject.ObjectCreationDate, newObject.ObjectCreationDate);
+        }
+
+        [TestMethod]
         public void JavaScriptSerialize() {
 
             DateTime creationDate = DateTime.Now;

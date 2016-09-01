@@ -10,6 +10,7 @@ using System.Web.Script.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
+using System.Dynamic;
 
 namespace Dlp.Framework {
 
@@ -156,9 +157,14 @@ namespace Dlp.Framework {
             }
         }
 
-        public static string NewtonsoftSerialize(object source) {
+        public static string NewtonsoftSerialize(object source, JsonSerializerSettings settings = null) {
 
-            return JsonConvert.SerializeObject(source);
+            if (settings == null) {
+                return JsonConvert.SerializeObject(source);
+            }
+            else {
+                return JsonConvert.SerializeObject(source, settings);
+            }
         }
 
         /// <summary>
@@ -212,10 +218,11 @@ namespace Dlp.Framework {
         /// </summary>
         /// <typeparam name="T">Type of the instance to be returned.</typeparam>
         /// <param name="source">JSON string to be deserialized.</param>
+        /// <param name="settings">The serialization settings to be used when desserializing the object.</param>
         /// <returns>Return a new instance of type T with the deserialized data, or default(T), if the JSON string is null.</returns>
-        public static T NewtonsoftDeserialize<T>(string source) {
+        public static T NewtonsoftDeserialize<T>(string source, JsonSerializerSettings settings = null) {
 
-            object result = NewtonsoftDeserialize(typeof(T), source);
+            object result = NewtonsoftDeserialize(typeof(T), source, settings);
 
             // Caso o objeto não exista, retorna default(T).
             if (result == null) { return default(T); }
@@ -228,14 +235,27 @@ namespace Dlp.Framework {
         /// </summary>
         /// <param name="returnType">Type of the instance to be returned.</param>
         /// <param name="source">JSON string to be deserialized.</param>
+        /// <param name="settings">The serialization settings to be used when desserializing the object.</param>
         /// <returns>Return a new instance of type T with the deserialized data, or default(T), if the JSON string is null.</returns>
-        public static object NewtonsoftDeserialize(Type returnType, string source) {
+        public static object NewtonsoftDeserialize(Type returnType, string source, JsonSerializerSettings settings = null) {
 
             // Verifica se o objeto foi especificado.
             if (source == null) { return null; }
 
-            // Executa a deserialização.
-            return JsonConvert.DeserializeObject(source, returnType);
+            if (settings == null) {
+                return JsonConvert.DeserializeObject(source, returnType);
+            }
+            else {
+                return JsonConvert.DeserializeObject(source, returnType, settings);
+            }
+        }
+
+        public static dynamic DynamicDeserialize(string source) {
+
+            // Verifica se o objeto foi especificado.
+            if (source == null) { return null; }
+
+            return JsonConvert.DeserializeObject(source, typeof(object));
         }
 
         /// <summary>

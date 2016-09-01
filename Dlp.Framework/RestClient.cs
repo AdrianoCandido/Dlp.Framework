@@ -59,6 +59,37 @@ namespace Dlp.Framework {
     /// <summary>
     /// Represents the response for a HttpWebRequest.
     /// </summary>
+    public class WebResponse {
+
+        /// <summary>
+        /// Initializes a new instance of the WebResponse class.
+        /// </summary>
+        public WebResponse() { }
+
+        /// <summary>
+        /// Gets the returned HttpStatusCode.
+        /// </summary>
+        public HttpStatusCode StatusCode { get; internal set; }
+
+        /// <summary>
+        /// Gets the flag that indicates whether the StatusCode represents a successful operation.
+        /// </summary>
+        public bool IsSuccessStatusCode { get; internal set; }
+
+        /// <summary>
+        /// Gets a dynamic object containing the returned object.
+        /// </summary>
+        public dynamic ResponseData { get; internal set; }
+
+        /// <summary>
+        /// Gets the raw string returned by the service.
+        /// </summary>
+        public string RawData { get; set; }
+    }
+
+    /// <summary>
+    /// Represents the response for a HttpWebRequest.
+    /// </summary>
     /// <typeparam name="T">Type of the response of a HttpWebRequest.</typeparam>
     public sealed class WebResponse<T> {
 
@@ -92,6 +123,80 @@ namespace Dlp.Framework {
     /// REST utility for HTTP communication.
     /// </summary>
     public static class RestClient {
+
+        public static WebResponse SendHttpWebRequest(object dataToSend, HttpVerb httpVerb, string destinationEndPoint, NameValueCollection headerCollection, bool allowInvalidCertificate = false) {
+
+            // Verifica se o endpoint para onde a requisição será enviada foi especificada.
+            if (string.IsNullOrWhiteSpace(destinationEndPoint)) { throw new ArgumentNullException("serviceEndpoint", "The serviceEndPoint parameter must not be null."); }
+
+            // Cria a uri para onde a requisição será enviada.
+            Uri destinationUri = new Uri(destinationEndPoint);
+
+            if (allowInvalidCertificate == true) {
+
+                // Verifica se certificados inválidos devem ser aceitos.
+                ServicePointManager.ServerCertificateValidationCallback = ((sender, certificate, chain, sslPolicyErrors) => true);
+
+            }
+
+            // Inicializa o código de status http a ser retornado.
+            HttpStatusCode responseStatusCode = HttpStatusCode.OK;
+
+            // Variável que armazenará o resultado da requisição.
+            string returnString = string.Empty;
+            bool isSuccessStatusCode = false;
+
+            using (var httpClient = new HttpClient()) {
+
+                string contentType = "application/json";
+
+                // Define o formato das mensagens.
+                httpClient.DefaultRequestHeaders.TryAddWithoutValidation("accept", contentType);
+
+                // Verifica se deverão ser enviados dados no header.
+                if (headerCollection != null && headerCollection.Count > 0) {
+
+                    // Insere cada chave no header da requisição.
+                    foreach (string key in headerCollection.Keys) { httpClient.DefaultRequestHeaders.TryAddWithoutValidation(key, headerCollection[key].ToString()); }
+                }
+
+                StringContent content = null;
+
+                // Verifica se foi especificada a informação a ser enviada.
+                if (dataToSend != null) {
+
+                    // Serializa o objeto para o formato especificado.
+                    string serializedData = Serializer.NewtonsoftSerialize(dataToSend);
+
+                    // Prepara os dados a serem enviados.
+                    content = new StringContent(serializedData, System.Text.Encoding.UTF8, contentType);
+                }
+
+                HttpResponseMessage httpResponseMessage = null;
+
+                using (HttpRequestMessage request = new HttpRequestMessage() { Method = new HttpMethod(httpVerb.ToString().ToUpperInvariant()), RequestUri = destinationUri, Content = content }) {
+
+                    httpResponseMessage = httpClient.SendAsync(request).Result;
+                }
+
+                responseStatusCode = httpResponseMessage.StatusCode;
+                returnString = httpResponseMessage.Content.ReadAsStringAsync().Result;
+                isSuccessStatusCode = httpResponseMessage.IsSuccessStatusCode;
+            }
+
+            dynamic returnData = null;
+
+            try {
+                // Executa a deserialização.
+                returnData = Serializer.DynamicDeserialize(returnString);
+            }
+            catch (Exception ex) {
+                returnData = null;
+            }
+
+            // Cria o objeto contendo o resultado da requisição.
+            return new WebResponse() { StatusCode = responseStatusCode, IsSuccessStatusCode = isSuccessStatusCode, ResponseData = returnData, RawData = returnString };
+        }
 
         /// <summary>
         /// Sends an Http request to the specified endpoint.
@@ -171,7 +276,7 @@ namespace Dlp.Framework {
             else {
                 try {
                     // Executa a deserialização adequada.
-                    returnValue = (httpContentType == HttpContentType.Json) ? Serializer.NewtonsoftDeserialize<T>(returnString) : Serializer.XmlDeserialize<T>(returnString);
+                    returnValue = (httpContentType == HttpContentType.Json) ? Serializer.JavaScriptDeserialize<T>(returnString) : Serializer.XmlDeserialize<T>(returnString);
                 }
                 catch (Exception ex) {
                     returnValue = null;
