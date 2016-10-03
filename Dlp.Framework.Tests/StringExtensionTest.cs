@@ -347,6 +347,14 @@ namespace Dlp.Sdk.Tests {
         }
 
         [TestMethod]
+        public void ValidateEmailWithSpecialCharacter()
+        {
+            bool actual = "nome.sobrenome@email.com".IsValidEmailAddress();
+
+            Assert.IsTrue(actual);
+        }
+
+        [TestMethod]
         public void ValidateIncompleteEmail() {
 
             bool actual = "sample@".IsValidEmailAddress();
