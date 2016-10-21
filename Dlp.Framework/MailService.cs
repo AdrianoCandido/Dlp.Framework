@@ -85,6 +85,8 @@ namespace Dlp.Framework {
 
                 // Adiciona todos os destinatários da mensagem.
                 mailMessage.To.Add(string.Join(",", mailContent.ReceiverMailList));
+                mailMessage.CC.Add(string.Join(",", mailContent.ReceiverCcList));
+                mailMessage.Bcc.Add(string.Join(",", mailContent.ReceiverBccList));
 
                 SmtpClient client = new SmtpClient(mailServerConfiguration.SmtpServerAddress, mailServerConfiguration.SmtpPort);
                 client.EnableSsl = mailServerConfiguration.UseSsl;
@@ -159,6 +161,16 @@ namespace Dlp.Framework {
         public IEnumerable<string> ReceiverMailList { get; set; }
 
         /// <summary>
+        /// Gets or sets the copy recipients addresses.
+        /// </summary>
+        public IEnumerable<string> ReceiverCcList { get; set; }
+
+        /// <summary>
+        /// Gets or sets the blind copy recipients addresses.
+        /// </summary>
+        public IEnumerable<string> ReceiverBccList { get; set; }
+
+        /// <summary>
         /// Gets or sets the flag indicating whether the mail body is clear text or html. Default value is false (clear text).
         /// </summary>
         public bool IsBodyHtml { get; set; }
@@ -195,6 +207,16 @@ namespace Dlp.Framework {
         /// Gets or sets the mail recipients addresses.
         /// </summary>
         IEnumerable<string> ReceiverMailList { get; set; }
+
+        /// <summary>
+        /// Gets or sets the copy recipients addresses.
+        /// </summary>
+        IEnumerable<string> ReceiverCcList { get; set; }
+
+        /// <summary>
+        /// Gets or sets the blind copy recipients addresses.
+        /// </summary>
+        IEnumerable<string> ReceiverBccList { get; set; }
 
         /// <summary>
         /// Gets or sets the flag indicating whether the mail body is clear text or html. Default value is false (clear text).
