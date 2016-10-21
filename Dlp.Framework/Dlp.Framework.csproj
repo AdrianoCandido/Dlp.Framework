@@ -97,16 +97,16 @@
     <Compile Include="StringExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Container\Samples\IocFactory.xml">
+    <None Include="Container\Samples\IocFactory.xml">
       <SubType>Designer</SubType>
-    </Content>
-    <Content Include="Samples\ByteExtensions.xml" />
-    <Content Include="Samples\CollectionExtensions.xml">
+    </None>
+    <None Include="Samples\ByteExtensions.xml" />
+    <None Include="Samples\CollectionExtensions.xml">
       <SubType>Designer</SubType>
-    </Content>
-    <Content Include="Samples\DateTimeExtensions.xml" />
-    <Content Include="Samples\ObjectExtensions.xml" />
-    <Content Include="Samples\StringExtensions.xml" />
+    </None>
+    <None Include="Samples\DateTimeExtensions.xml" />
+    <None Include="Samples\ObjectExtensions.xml" />
+    <None Include="Samples\StringExtensions.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Dlp.Framework.nuspec" />
