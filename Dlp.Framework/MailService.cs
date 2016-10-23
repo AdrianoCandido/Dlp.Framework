@@ -85,8 +85,8 @@ namespace Dlp.Framework {
 
                 // Adiciona todos os destinatários da mensagem.
                 mailMessage.To.Add(string.Join(",", mailContent.ReceiverMailList));
-                mailMessage.CC.Add(string.Join(",", mailContent.ReceiverCcList));
-                mailMessage.Bcc.Add(string.Join(",", mailContent.ReceiverBccList));
+                if (mailContent.ReceiverCcList != null) { mailMessage.CC.Add(string.Join(",", mailContent.ReceiverCcList)); }
+                if (mailContent.ReceiverBccList != null) { mailMessage.Bcc.Add(string.Join(",", mailContent.ReceiverBccList)); }
 
                 SmtpClient client = new SmtpClient(mailServerConfiguration.SmtpServerAddress, mailServerConfiguration.SmtpPort);
                 client.EnableSsl = mailServerConfiguration.UseSsl;
