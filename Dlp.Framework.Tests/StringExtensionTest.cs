@@ -363,6 +363,14 @@ namespace Dlp.Sdk.Tests {
         }
 
         [TestMethod]
+        public void ValidateSubdomainEmail() {
+
+            bool actual = "teste@dlpgi.dlp-payments.com".IsValidEmailAddress();
+
+            Assert.IsTrue(actual);
+        }
+
+        [TestMethod]
         public void ValidateNullEmail() {
 
             bool actual = StringExtensions.IsValidEmailAddress(null);

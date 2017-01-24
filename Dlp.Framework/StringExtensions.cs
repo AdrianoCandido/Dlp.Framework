@@ -254,15 +254,18 @@ namespace Dlp.Framework {
         /// Checks if the current string has a valid email address format.
         /// </summary>
         /// <param name="source">String to be checked.</param>
+        /// <param name="validationExpression">Optionally, specify your own regular expression to validate the email address.</param>
         /// <returns>Return true if the string has a valid email address format.</returns>
         /// <include file='Samples/StringExtensions.xml' path='Docs/Members[@name="IsValidEmailAddress"]/*'/>
-        public static bool IsValidEmailAddress(this string source) {
+        public static bool IsValidEmailAddress(this string source, string validationExpression = null) {
 
             // Verifica se foi especificado alguma string a ser validada.
             if (string.IsNullOrWhiteSpace(source) == true) { return false; }
 
             // Expressão de validação do email.
-            string pattern = @"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))\z";
+            string pattern = validationExpression ?? @"^[A-Z0-9._%+-]+@(?:[A-Z0-9-]+\.)+[A-Z]{2,}$";
+
+            //string pattern = @"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))\z";
 
             // Instancia o processador de expressões regulares.
             Regex regex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
