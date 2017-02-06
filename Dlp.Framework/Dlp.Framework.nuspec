@@ -4,13 +4,13 @@
 		<id>Dlp.Framework.dll</id>
 		<title>DLP Framework</title>
 		<iconUrl>http://www.stone.com.br/img/stone32x32.png</iconUrl>
-		<version>1.0.4</version>
+		<version>1.0.5</version>
 		<authors>Stone Pagamentos S/A</authors>
 		<owners>Stone Pagamentos S/A</owners>
 		<projectUrl>http://stone-payments.github.io/Dlp.Framework</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Common framework containing utilities and extension methods for fast development.</description>
-		<releaseNotes>Implemented the Mocker class.</releaseNotes>
+		<releaseNotes>Implementada instancia para o RestClient, com o método Send. Implementada interface IRestClient e timeout default de 90 segundos para as chamadas REST.</releaseNotes>
 		<copyright>Stone Pagamentos S/A - Copyright 2015</copyright>
 		<tags>Validation Serialization Email CPF CNPJ XML WebRequest IoC Mock</tags>
     <dependencies>

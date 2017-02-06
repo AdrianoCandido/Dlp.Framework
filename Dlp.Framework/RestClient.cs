@@ -119,12 +119,83 @@ namespace Dlp.Framework {
         public string RawData { get; set; }
     }
 
+    public interface IRestClient {
+
+        /// <summary>
+        /// Sends an Http request to the specified endpoint.
+        /// </summary>
+        /// <param name="dataToSend">Object containing the data to be sent in the request.</param>
+        /// <param name="httpVerb">HTTP verb to be using when sending the data.</param>
+        /// <param name="destinationEndPoint">Endpoint where the request will be sent to.</param>
+        /// <param name="headerCollection">Custom data to be added to the request header.</param>
+        /// <param name="allowInvalidCertificate">When set to true, allows the request to be done even if the destination certificate is not valid.</param>
+        /// <param name="timeoutInSeconds">Request timeout in seconds.</param>
+        /// <returns>Returns an WebResponse as a Task, containing the result of the request.</returns>
+        WebResponse Send(object dataToSend, HttpVerb httpVerb, string destinationEndPoint, NameValueCollection headerCollection, bool allowInvalidCertificate = false, int timeoutInSeconds = 90);
+
+        /// <summary>
+        /// Sends an Http request to the specified endpoint.
+        /// </summary>
+        /// <typeparam name="T">Type of the expected response. Ignored if http verb GET is used.</typeparam>
+        /// <param name="dataToSend">Object containing the data to be sent in the request.</param>
+        /// <param name="httpVerb">HTTP verb to be using when sending the data.</param>
+        /// <param name="httpContentType">Content type of the transferred data.</param>
+        /// <param name="destinationEndPoint">Endpoint where the request will be sent to.</param>
+        /// <param name="headerCollection">Custom data to be added to the request header.</param>
+        /// <param name="allowInvalidCertificate">When set to true, allows the request to be done even if the destination certificate is not valid.</param>
+        /// <param name="timeoutInSeconds">Request timeout in seconds.</param>
+        /// <returns>Returns an WebResponse as a Task, containing the result of the request.</returns>
+        WebResponse<T> Send<T>(object dataToSend, HttpVerb httpVerb, HttpContentType httpContentType, string destinationEndPoint, NameValueCollection headerCollection, bool allowInvalidCertificate = false, int timeoutInSeconds = 90) where T : class;
+    }
+
     /// <summary>
     /// REST utility for HTTP communication.
     /// </summary>
-    public static class RestClient {
+    public sealed class RestClient : IRestClient {
 
-        public static WebResponse SendHttpWebRequest(object dataToSend, HttpVerb httpVerb, string destinationEndPoint, NameValueCollection headerCollection, bool allowInvalidCertificate = false) {
+        /// <summary>
+        /// Sends an Http request to the specified endpoint.
+        /// </summary>
+        /// <param name="dataToSend">Object containing the data to be sent in the request.</param>
+        /// <param name="httpVerb">HTTP verb to be using when sending the data.</param>
+        /// <param name="destinationEndPoint">Endpoint where the request will be sent to.</param>
+        /// <param name="headerCollection">Custom data to be added to the request header.</param>
+        /// <param name="allowInvalidCertificate">When set to true, allows the request to be done even if the destination certificate is not valid.</param>
+        /// <param name="timeoutInSeconds">Request timeout in seconds.</param>
+        /// <returns>Returns an WebResponse as a Task, containing the result of the request.</returns>
+        public WebResponse Send(object dataToSend, HttpVerb httpVerb, string destinationEndPoint, NameValueCollection headerCollection, bool allowInvalidCertificate = false, int timeoutInSeconds = 90) {
+
+            return RestClient.SendHttpWebRequest(dataToSend, httpVerb, destinationEndPoint, headerCollection, allowInvalidCertificate, timeoutInSeconds);
+        }
+
+        /// <summary>
+        /// Sends an Http request to the specified endpoint.
+        /// </summary>
+        /// <typeparam name="T">Type of the expected response. Ignored if http verb GET is used.</typeparam>
+        /// <param name="dataToSend">Object containing the data to be sent in the request.</param>
+        /// <param name="httpVerb">HTTP verb to be using when sending the data.</param>
+        /// <param name="httpContentType">Content type of the transferred data.</param>
+        /// <param name="destinationEndPoint">Endpoint where the request will be sent to.</param>
+        /// <param name="headerCollection">Custom data to be added to the request header.</param>
+        /// <param name="allowInvalidCertificate">When set to true, allows the request to be done even if the destination certificate is not valid.</param>
+        /// <param name="timeoutInSeconds">Request timeout in seconds.</param>
+        /// <returns>Returns an WebResponse as a Task, containing the result of the request.</returns>
+        public WebResponse<T> Send<T>(object dataToSend, HttpVerb httpVerb, HttpContentType httpContentType, string destinationEndPoint, NameValueCollection headerCollection, bool allowInvalidCertificate = false, int timeoutInSeconds = 90) where T : class {
+
+            return RestClient.SendHttpWebRequest<T>(dataToSend, httpVerb, httpContentType, destinationEndPoint, headerCollection, allowInvalidCertificate, timeoutInSeconds);
+        }
+
+        /// <summary>
+        /// Sends an Http request to the specified endpoint.
+        /// </summary>
+        /// <param name="dataToSend">Object containing the data to be sent in the request.</param>
+        /// <param name="httpVerb">HTTP verb to be using when sending the data.</param>
+        /// <param name="destinationEndPoint">Endpoint where the request will be sent to.</param>
+        /// <param name="headerCollection">Custom data to be added to the request header.</param>
+        /// <param name="allowInvalidCertificate">When set to true, allows the request to be done even if the destination certificate is not valid.</param>
+        /// <param name="timeoutInSeconds">Request timeout in seconds.</param>
+        /// <returns>Returns an WebResponse as a Task, containing the result of the request.</returns>
+        public static WebResponse SendHttpWebRequest(object dataToSend, HttpVerb httpVerb, string destinationEndPoint, NameValueCollection headerCollection, bool allowInvalidCertificate = false, int timeoutInSeconds = 90) {
 
             // Verifica se o endpoint para onde a requisição será enviada foi especificada.
             if (string.IsNullOrWhiteSpace(destinationEndPoint)) { throw new ArgumentNullException("serviceEndpoint", "The serviceEndPoint parameter must not be null."); }
@@ -152,6 +223,9 @@ namespace Dlp.Framework {
 
                 // Define o formato das mensagens.
                 httpClient.DefaultRequestHeaders.TryAddWithoutValidation("accept", contentType);
+
+                // Define o timeout da operação.
+                httpClient.Timeout = TimeSpan.FromSeconds(timeoutInSeconds);
 
                 // Verifica se deverão ser enviados dados no header.
                 if (headerCollection != null && headerCollection.Count > 0) {
@@ -209,7 +283,7 @@ namespace Dlp.Framework {
         /// <param name="headerCollection">Custom data to be added to the request header.</param>
         /// <param name="allowInvalidCertificate">When set to true, allows the request to be done even if the destination certificate is not valid.</param>
         /// <returns>Returns an WebResponse as a Task, containing the result of the request.</returns>
-        public static WebResponse<T> SendHttpWebRequest<T>(object dataToSend, HttpVerb httpVerb, HttpContentType httpContentType, string destinationEndPoint, NameValueCollection headerCollection, bool allowInvalidCertificate = false) where T : class {
+        public static WebResponse<T> SendHttpWebRequest<T>(object dataToSend, HttpVerb httpVerb, HttpContentType httpContentType, string destinationEndPoint, NameValueCollection headerCollection, bool allowInvalidCertificate = false, int timeoutInSeconds = 90) where T : class {
 
             // Verifica se o endpoint para onde a requisição será enviada foi especificada.
             if (string.IsNullOrWhiteSpace(destinationEndPoint)) { throw new ArgumentNullException("serviceEndpoint", "The serviceEndPoint parameter must not be null."); }
@@ -238,6 +312,9 @@ namespace Dlp.Framework {
                 // Define o formato das mensagens.
                 httpClient.DefaultRequestHeaders.TryAddWithoutValidation("accept", contentType);
 
+                // Define o timeout da operação.
+                httpClient.Timeout = TimeSpan.FromSeconds(timeoutInSeconds);
+
                 // Verifica se deverão ser enviados dados no header.
                 if (headerCollection != null && headerCollection.Count > 0) {
 
@@ -260,7 +337,7 @@ namespace Dlp.Framework {
                 HttpResponseMessage httpResponseMessage = null;
 
                 using (HttpRequestMessage request = new HttpRequestMessage() { Method = new HttpMethod(httpVerb.ToString().ToUpperInvariant()), RequestUri = destinationUri, Content = content }) {
-
+                    
                     httpResponseMessage = httpClient.SendAsync(request).Result;
                 }
 
@@ -298,7 +375,7 @@ namespace Dlp.Framework {
         /// <param name="headerCollection">Custom data to be added to the request header.</param>
         /// <param name="allowInvalidCertificate">When set to true, allows the request to be done even if the destination certificate is not valid.</param>
         /// <returns>Returns an WebResponse as a Task, containing the result of the request.</returns>
-        public static async Task<WebResponse<T>> SendHttpWebRequestAsync<T>(object dataToSend, HttpVerb httpVerb, HttpContentType httpContentType, string destinationEndPoint, NameValueCollection headerCollection, bool allowInvalidCertificate = false) where T : class {
+        public static async Task<WebResponse<T>> SendHttpWebRequestAsync<T>(object dataToSend, HttpVerb httpVerb, HttpContentType httpContentType, string destinationEndPoint, NameValueCollection headerCollection, bool allowInvalidCertificate = false, int timeoutInSeconds = 90) where T : class {
 
             // Verifica se o endpoint para onde a requisição será enviada foi especificada.
             if (string.IsNullOrWhiteSpace(destinationEndPoint)) { throw new ArgumentNullException("serviceEndpoint", "The serviceEndPoint parameter must not be null."); }
