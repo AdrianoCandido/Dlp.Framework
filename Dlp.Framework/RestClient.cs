@@ -53,7 +53,12 @@ namespace Dlp.Framework {
         /// <summary>
         /// Defines that the rest communication should be made with JSON format.
         /// </summary>
-        Json
+        Json,
+
+        /// <summary>
+        /// Defines that the rest communication should be made using plain text.
+        /// </summary>
+        PlainText
     }
 
     /// <summary>
@@ -307,10 +312,13 @@ namespace Dlp.Framework {
 
             using (var httpClient = new HttpClient()) {
 
-                string contentType = (httpContentType == HttpContentType.Json) ? "application/json" : "application/xml";
+                string contentType = "text/plain";
+
+                if (httpContentType == HttpContentType.Json) { contentType = "application/json"; }
+                else if (httpContentType == HttpContentType.Xml) { contentType = "application/xml"; };
 
                 // Define o formato das mensagens.
-                httpClient.DefaultRequestHeaders.TryAddWithoutValidation("accept", contentType);
+                //httpClient.DefaultRequestHeaders.TryAddWithoutValidation("accept", contentType);
 
                 // Define o timeout da operação.
                 httpClient.Timeout = TimeSpan.FromSeconds(timeoutInSeconds);
@@ -328,7 +336,7 @@ namespace Dlp.Framework {
                 if (dataToSend != null) {
 
                     // Serializa o objeto para o formato especificado.
-                    string serializedData = (httpContentType == HttpContentType.Json) ? Serializer.NewtonsoftSerialize(dataToSend) : Serializer.XmlSerialize(dataToSend);
+                    string serializedData = (httpContentType == HttpContentType.Xml) ? Serializer.XmlSerialize(dataToSend) : Serializer.NewtonsoftSerialize(dataToSend);
 
                     // Prepara os dados a serem enviados.
                     content = new StringContent(serializedData, System.Text.Encoding.UTF8, contentType);
@@ -353,7 +361,7 @@ namespace Dlp.Framework {
             else {
                 try {
                     // Executa a deserialização adequada.
-                    returnValue = (httpContentType == HttpContentType.Json) ? Serializer.JavaScriptDeserialize<T>(returnString) : Serializer.XmlDeserialize<T>(returnString);
+                    returnValue = (httpContentType == HttpContentType.Json) ? Serializer.NewtonsoftDeserialize<T>(returnString) : Serializer.XmlDeserialize<T>(returnString);
                 }
                 catch (Exception ex) {
                     returnValue = null;
