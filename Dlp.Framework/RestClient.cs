@@ -282,6 +282,7 @@ namespace Dlp.Framework {
         /// <param name="destinationEndPoint">Endpoint where the request will be sent to.</param>
         /// <param name="headerCollection">Custom data to be added to the request header.</param>
         /// <param name="allowInvalidCertificate">When set to true, allows the request to be done even if the destination certificate is not valid.</param>
+        /// <param name="timeoutInSeconds">Operation timeout. Default 90 seconds.</param>
         /// <returns>Returns an WebResponse as a Task, containing the result of the request.</returns>
         public static WebResponse<T> SendHttpWebRequest<T>(object dataToSend, HttpVerb httpVerb, HttpContentType httpContentType, string destinationEndPoint, NameValueCollection headerCollection, bool allowInvalidCertificate = false, int timeoutInSeconds = 90) where T : class {
 
@@ -295,7 +296,6 @@ namespace Dlp.Framework {
 
                 // Verifica se certificados inválidos devem ser aceitos.
                 ServicePointManager.ServerCertificateValidationCallback = ((sender, certificate, chain, sslPolicyErrors) => true);
-
             }
 
             // Inicializa o código de status http a ser retornado.
@@ -353,7 +353,7 @@ namespace Dlp.Framework {
             else {
                 try {
                     // Executa a deserialização adequada.
-                    returnValue = (httpContentType == HttpContentType.Json) ? Serializer.JavaScriptDeserialize<T>(returnString) : Serializer.XmlDeserialize<T>(returnString);
+                    returnValue = (httpContentType == HttpContentType.Json) ? Serializer.NewtonsoftDeserialize<T>(returnString) : Serializer.XmlDeserialize<T>(returnString);
                 }
                 catch (Exception ex) {
                     returnValue = null;

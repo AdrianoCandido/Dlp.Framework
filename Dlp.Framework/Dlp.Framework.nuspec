@@ -4,7 +4,7 @@
 		<id>Dlp.Framework.dll</id>
 		<title>DLP Framework</title>
 		<iconUrl>http://www.stone.com.br/img/stone32x32.png</iconUrl>
-		<version>1.0.5</version>
+		<version>1.0.6</version>
 		<authors>Stone Pagamentos S/A</authors>
 		<owners>Stone Pagamentos S/A</owners>
 		<projectUrl>http://stone-payments.github.io/Dlp.Framework</projectUrl>
@@ -17,10 +17,10 @@
       <dependency id="Newtonsoft.Json" version="9.0.1" />
     </dependencies>
 		<frameworkAssemblies>
-			<frameworkAssembly assemblyName="System.Runtime.Serialization" targetFramework="net40, net45" />
-      <frameworkAssembly assemblyName="System.Web.Extensions" targetFramework="net40, net45" />
-      <frameworkAssembly assemblyName="System.ServiceModel" targetFramework="net40, net45" />
-      <frameworkAssembly assemblyName="System.ServiceModel.Activation" targetFramework="net40, net45" />
+			<frameworkAssembly assemblyName="System.Runtime.Serialization" targetFramework="net40, net45, net46" />
+      <frameworkAssembly assemblyName="System.Web.Extensions" targetFramework="net40, net45, net46" />
+      <frameworkAssembly assemblyName="System.ServiceModel" targetFramework="net40, net45, net46" />
+      <frameworkAssembly assemblyName="System.ServiceModel.Activation" targetFramework="net40, net45, net46" />
 		</frameworkAssemblies>
 	</metadata>
   <files></files>
